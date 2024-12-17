@@ -10,6 +10,6 @@
 
 5.	**counterAnalysis4Agents.py**: Displays the results of counterfactual analysis in terms of groundwater irrigation depth (mm) and relative groundwater level (mm).
 
-For datasets required to run the scripts, please find them in the **data.zip** 
+For datasets required to run the scripts, please find them in the **data.zip**.
 
 
