@@ -6,9 +6,9 @@
 
 3.	**getInfluentialVariables4Agents.py**: Identifies the variables that can have a statistically causal influence on the decision-making of annual groundwater irrigation using Directed Information.
 
-4.	**predictIrrigation4Agents.py**: Predicts agents’ monthly groundwater irrigation depth for non-stationary agents by two XGBoost models, Model~1 and Model~2. 
+4.	**predictIrrigation4Agents.py**: Predicts agents’ monthly groundwater irrigation depth for non-stationary agents by two XGBoost models, Model1 and Model2. 
 
-5.	**counterAnalysis4Agents.py**: Displays the results of counterfactual analysis in terms of groundwater use (m) and relative groundwater level (mm).
+5.	**counterAnalysis4Agents.py**: Displays the results of counterfactual analysis in terms of groundwater use (m) and relative groundwater level (m).
 
 For datasets required to run the scripts, please find them in the **data.zip**.
 
