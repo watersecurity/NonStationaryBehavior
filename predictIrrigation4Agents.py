@@ -5,6 +5,7 @@ Predict irrigation depth for each cluster
 """
 # Author: Yao Hu
 # Date: 12/16/2024
+# Update: 3/11/2025
 
 print(__doc__)
 
@@ -74,7 +75,6 @@ cluster3 = [2, 3, 4, 7, 8, 9, 11, 19, 40, 47, 48]
 # nonstationary agents
 nonstationary_agent = [21, 22, 23, 31, 36, 37, 47, 48]
 
-
 # # Step 1: train the XBGoost model for each cluster
 # print('Train the XGBoost model for each cluster:')
 # # load the data
@@ -112,19 +112,29 @@ nonstationary_agent = [21, 22, 23, 31, 36, 37, 47, 48]
 # filename = 'irr_reg_mod3.sav'
 # pickle.dump(irr_reg_mod3, open(filename, 'wb'))
 
-# Step 2: predict the irrigation depth for nonstationary agents in each cluster
+
+# Step 2: predict the irrigation depth for nonstationary agents in each cluster by Model 1 and Model 2
 # load the models for different clusters from disk
-filename = 'irr_reg_mod1.sav'
+filename = 'irr_reg_mod11.sav'
 # load the model from disk using pickle
-irr_reg_mod1 = pickle.load(open(filename, 'rb'))
+irr_reg_mod11 = pickle.load(open(filename, 'rb'))
 
-filename = 'irr_reg_mod2.sav'
-# load the model from disk using pickle
-irr_reg_mod2 = pickle.load(open(filename, 'rb'))
+filename = 'irr_reg_mod12.sav'
+irr_reg_mod12 = pickle.load(open(filename, 'rb'))
 
-filename = 'irr_reg_mod3.sav'
+filename = 'irr_reg_mod13.sav'
+irr_reg_mod13 = pickle.load(open(filename, 'rb'))
+
+filename = 'irr_reg_mod21.sav'
 # load the model from disk using pickle
-irr_reg_mod3 = pickle.load(open(filename, 'rb'))
+irr_reg_mod21 = pickle.load(open(filename, 'rb'))
+
+filename = 'irr_reg_mod22.sav'
+# load the model from disk using pickle
+irr_reg_mod22 = pickle.load(open(filename, 'rb'))
+
+filename = 'irr_reg_mod23.sav'
+irr_reg_mod23 = pickle.load(open(filename, 'rb'))
 
 # target variable: Irrigation_Depth
 # explanatory variables for cluster 1: Wheat, Precipitation, Temperature
@@ -133,6 +143,13 @@ irr_reg_mod3 = pickle.load(open(filename, 'rb'))
 
 # load the data for agents in both nonstationary_agent and cluster 1
 file_path = './agentdata/'
+
+# 2. Specify the feature columns
+# Cluster 1
+feature_cols = ['Wheat', 'Precipitation', 'Temperature']
+
+# Clusters 2 and 3
+# feature_cols = ['Wheat', 'Soybeans', 'Precipitation', 'Temperature']
 
 for nonstat_agent in nonstationary_agent:
     # load the data in csv file
@@ -144,32 +161,74 @@ for nonstat_agent in nonstationary_agent:
                         (datasets['Soybeans'] >= 0) & (datasets['Sorghum'] >= 0) & (datasets['Diesel'] >= 0) &
                         (datasets['Precipitation'] >= 0)]
 
+    test1_mask = (datasets['Year'] > 2012)
+    test2_mask = (datasets['Year'] > 2013)
+
     if nonstat_agent in cluster1:
         # predict the irrigation depth for nonstationary agents in cluster 1
-        X_test = datasets[['Wheat', 'Precipitation', 'Temperature']]
-        y_test = datasets['Irrigation_Depth']
-        y_pred = irr_reg_mod1.predict(X_test)
+        # Split into training features (X) and target (y)
+        feature_cols = ['Wheat', 'Precipitation', 'Temperature']
+
+        X1_test = datasets.loc[test1_mask, feature_cols]
+        y1_test = datasets.loc[test1_mask, 'Irrigation_Depth']
+
+        X2_test = datasets.loc[test2_mask, feature_cols]
+        y2_test = datasets.loc[test2_mask, 'Irrigation_Depth']
+
+        y_pred1 = irr_reg_mod11.predict(X1_test)
+        y_pred2 = irr_reg_mod21.predict(X2_test)
 
     elif nonstat_agent in cluster2:
         # predict the irrigation depth for nonstationary agents in cluster 2
-        X_test = datasets[['Wheat', 'Soybeans', 'Precipitation', 'Temperature']]
-        y_test = datasets['Irrigation_Depth']
-        y_pred = irr_reg_mod2.predict(X_test)
+        feature_cols = ['Wheat', 'Soybeans', 'Precipitation', 'Temperature']
+
+        X1_test = datasets.loc[test1_mask, feature_cols]
+        y1_test = datasets.loc[test1_mask, 'Irrigation_Depth']
+
+        X2_test = datasets.loc[test2_mask, feature_cols]
+        y2_test = datasets.loc[test2_mask, 'Irrigation_Depth']
+
+        y_pred1 = irr_reg_mod12.predict(X1_test)
+        y_pred2 = irr_reg_mod22.predict(X2_test)
+
     else:
         # predict the irrigation depth for nonstationary agents in cluster 3
-        X_test = datasets[['Wheat', 'Soybeans', 'Precipitation', 'Temperature']]
-        y_test = datasets['Irrigation_Depth']
-        y_pred = irr_reg_mod3.predict(X_test)
+        feature_cols = ['Wheat', 'Soybeans', 'Precipitation', 'Temperature']
+
+        X1_test = datasets.loc[test1_mask, feature_cols]
+        y1_test = datasets.loc[test1_mask, 'Irrigation_Depth']
+
+        X2_test = datasets.loc[test2_mask, feature_cols]
+        y2_test = datasets.loc[test2_mask, 'Irrigation_Depth']
+
+        y_pred1 = irr_reg_mod13.predict(X1_test)
+        y_pred2 = irr_reg_mod23.predict(X2_test)
 
     # check the predicted irrigation depth and if it is negative, set it to zero
-    y_pred = np.where(y_pred < 1, 0, y_pred)
-    # add the predicted irrigation depth to the dataframe
-    datasets['Irrigation_Depth_Pred'] = y_pred
-    # evaluate predictions
-    mse3 = mean_squared_error(y_test, y_pred)
-    r23 = r2_score(y_test, y_pred)
-    # print the results for each agent
-    print("Agent {0}: MSE and R2: {1:.4f} and {2:.2f}".format(nonstat_agent, mse3, r23))
+    y_pred1 = np.where(y_pred1 < 1, 0, y_pred1)
+    y_pred2 = np.where(y_pred2 < 1, 0, y_pred2)
 
-    # save the predicted irrigation depth to csv file
-    datasets.to_csv(file_path + 'agentdata_' + str(nonstat_agent) + '_pred.csv', index=False)
+    # evaluate predictions
+    mse3 = mean_squared_error(y1_test, y_pred1)
+    r23 = r2_score(y1_test, y_pred1)
+    # print the results for each agent
+    print("Model 1: Agent {0}: MSE and R2: {1:.4f} and {2:.2f}".format(nonstat_agent, mse3, r23))
+
+    mse3 = mean_squared_error(y2_test, y_pred2)
+    r23 = r2_score(y2_test, y_pred2)
+    print("Model 2: Agent {0}: MSE and R2: {1:.4f} and {2:.2f}".format(nonstat_agent, mse3, r23))
+
+    # add the predicted irrigation depth to the dataframe
+    datasets['Irrigation_Depth_M1'] = datasets['Irrigation_Depth']
+    datasets['Irrigation_Depth_M2'] = datasets['Irrigation_Depth']
+
+    # Define Boolean masks to pick out rows from the relevant years
+    mask_2012 = (datasets['Year'] > 2012)
+    mask_2013 = (datasets['Year'] > 2013)
+
+    # Overwrite the relevant rows with the prediction arrays
+    datasets.loc[mask_2012, 'Irrigation_Depth_M1'] = y_pred1
+    datasets.loc[mask_2013, 'Irrigation_Depth_M2'] = y_pred2
+
+    # Save the predicted irrigation depth to csv file
+    datasets.to_csv(file_path + 'agentdata_' + str(nonstat_agent) + '_pred_m1_m2.csv', index=False)
