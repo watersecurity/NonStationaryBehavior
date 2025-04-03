@@ -78,7 +78,7 @@ nonstationary_agent = [21, 22, 23, 31, 36, 37, 47, 48]
 # # Step 1: train the XBGoost model for each cluster
 # print('Train the XGBoost model for each cluster:')
 # # load the data
-# file_path = './agentdata/'
+# file_path = './data/'
 # datasets = pd.read_csv(file_path + 'agentdata_cluster3.csv')
 #
 # # drop the rows with missing values
@@ -142,7 +142,7 @@ irr_reg_mod23 = pickle.load(open(filename, 'rb'))
 # explanatory variables for cluster 3: Wheat, Soybeans, Precipitation, Temperature
 
 # load the data for agents in both nonstationary_agent and cluster 1
-file_path = './agentdata/'
+file_path = './data/'
 
 # 2. Specify the feature columns
 # Cluster 1
